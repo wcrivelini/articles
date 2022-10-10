@@ -1,0 +1,4 @@
+Database Deployment with Terraform - The Basics
+SQL Server Central 
+2022
+https://www.sqlservercentral.com/articles/database-deployment-with-terraform-the-basics
