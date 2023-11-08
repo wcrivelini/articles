@@ -1,0 +1,130 @@
+//***********************************************************************************************************
+// Here are two articles to help you get started with KQL:
+// KQL reference guide - https://aka.ms/KQLguide
+// SQL - KQL conversions - https://aka.ms/sqlcheatsheet
+//***********************************************************************************************************
+
+// Use "take" to view a sample number of records in the table and check the data.
+YOUR_TABLE_HERE
+| take 100
+
+// See how many records are in the table.
+YOUR_TABLE_HERE
+| count
+
+// This query returns the number of ingestions per hour in the given table.
+YOUR_TABLE_HERE
+| summarize IngestionCount = count() by bin(ingestion_time(), 1h)
+
+// query 1
+// Use 'take' to view a sample number of records in the table and check the data.
+Traffic
+| take 100
+
+
+
+
+//query 2 - STATISTICS
+Traffic
+| summarize cnt= count(), minDate = min(Timestamp), maxDte = max(Timestamp)
+
+
+
+
+
+
+
+// query 3 - COUNT_DISTINCT
+Traffic
+| summarize cnt= count(), minDate = min(Timestamp), maxDte = max(Timestamp)
+, qtyVehicles= count_distinct(VIN)
+
+
+
+
+
+
+
+//query 4 - sorting data
+Traffic
+| summarize cnt= count() by VIN
+| sort by cnt 
+
+
+
+
+
+
+
+//query 5 - filtering data
+Traffic
+| where VIN == 'GT422DC5F8'
+| sort by Timestamp asc 
+
+Traffic
+| where VIN in ('GT422DC5F8')
+| sort by Timestamp asc 
+
+
+
+
+
+
+//query 6 - joins and subqueries
+// find all vehicles that passed and the same time by 88th Ave with 100th Street
+let Q1 =
+    Traffic
+    | where Avenue == 88 and Street == 100
+;
+Traffic
+| join kind=inner Q1 on Timestamp, Avenue, Street
+| where VIN <> VIN1
+| sort by Timestamp , Avenue, Street, VIN
+
+
+
+
+
+
+
+
+// query 7 - bin 
+// show number of vehicles in timeline
+let Timespan = 30m ;
+// timeline with number of cars in a given place
+Traffic
+| where Avenue == 88 and Street == 100
+| extend point = bin(Timestamp, Timespan)
+| summarize cnt = count() by point
+| render timechart
+
+
+
+
+
+
+
+
+// query 8 - anomaly charts
+// show number of vehicles in timeline
+let TimeBuckets = 10m;
+Traffic
+| where Timestamp  < datetime(2022-10-16T09:10:00Z)
+| summarize cntVin = count() by Timestamp, Avenue, Street
+| make-series cnt= avg(cntVin) on Timestamp step TimeBuckets
+| extend anomaly = series_decompose_anomalies(cnt)
+| render anomalychart with(anomalycolumns=anomaly, title='Traffic Anomalies')
+
+
+
+
+
+
+
+//query 9 
+// presenting a scatterchart
+Traffic
+| where VIN in ("XC2952A7FB", "RI8E6C4294", "CXDE148D63")
+| summarize Ave = make_list(Avenue), Street = make_list(Street) by VIN
+| render scatterchart with (xtitle= 'Avenue', ytitle = 'Street')
+
