@@ -1,1 +1,0 @@
-Apresentação sobre análise de GRAFOS com SQL Server 2025
